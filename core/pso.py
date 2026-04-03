@@ -1,7 +1,5 @@
-from __future__ import annotations
 import time
 import logging
-from dataclasses import dataclass, field
 from typing import Callable, List, Optional
 import numpy as np
 from numpy.typing import NDArray
@@ -12,15 +10,24 @@ from .bounds import BoundsPolicy, ClampBounds
 from .topology import Topology, GlobalBestTopology
 
 
-@dataclass
 class RunResult:
-    best_position: NDArray[np.float64]
-    best_fitness: float
-    iterations: int
-    time_total: float
-    time_eval: float
-    time_update: float
-    history: List[float]
+    def __init__(
+        self,
+        best_position: NDArray[np.float64],
+        best_fitness: float,
+        iterations: int,
+        time_total: float,
+        time_eval: float,
+        time_update: float,
+        history: List[float],
+    ):
+        self.best_position = best_position
+        self.best_fitness = best_fitness
+        self.iterations = iterations
+        self.time_total = time_total
+        self.time_eval = time_eval
+        self.time_update = time_update
+        self.history = history
 
 
 class PSO:
