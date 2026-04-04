@@ -7,6 +7,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from objectives import REGISTRY
 from experiments.runner import RunConfig, run_experiment
 
+EVALUATORS = ["sequential", "threading"]
+
 
 def main():
     parser = argparse.ArgumentParser(description="Run PSO on a benchmark function")
@@ -19,10 +21,10 @@ def main():
     parser.add_argument("--max-iters", type=int, default=500)
     parser.add_argument("--patience", type=int, default=50)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--evaluator", default="sequential", choices=EVALUATORS)
     parser.add_argument("--save-dir", default="results")
     parser.add_argument("--no-save", action="store_true")
-    parser.add_argument("--compare-baseline", action="store_true",
-                        help="Also run pyswarm baseline and compare")
+    parser.add_argument("--compare-baseline", action="store_true")
     args = parser.parse_args()
 
     obj_info = REGISTRY[args.objective]
@@ -39,17 +41,19 @@ def main():
         max_iters=args.max_iters,
         patience=args.patience,
         seed=args.seed,
+        evaluator=args.evaluator,
         save_dir="" if args.no_save else args.save_dir,
         compare_baseline=args.compare_baseline,
     )
 
     result = run_experiment(config)
 
+    label = "V0 (sequential)" if args.evaluator == "sequential" else "V1 (threading)"
     pct_eval = result.time_eval / result.time_total * 100 if result.time_total > 0 else 0
     pct_update = result.time_update / result.time_total * 100 if result.time_total > 0 else 0
 
     print(f"{'─'*44}")
-    print(f"  V0 (sequential)  |  {args.objective} d={args.dim} seed={args.seed}")
+    print(f"  {label}  |  {args.objective} d={args.dim} seed={args.seed}")
     print(f"{'─'*44}")
     print(f"  Best fitness : {result.best_fitness:.6e}")
     print(f"  Iterations   : {result.iterations}")
@@ -65,7 +69,7 @@ def main():
         print(f"  Best fitness : {baseline.best_fitness:.6e}")
         print(f"  Time total   : {baseline.time_total:.3f}s")
         print(f"{'─'*44}")
-        winner = "V0" if result.best_fitness <= baseline.best_fitness else "pyswarm"
+        winner = label if result.best_fitness <= baseline.best_fitness else "pyswarm"
         print(f"  Winner (fitness): {winner}")
     print(f"{'─'*44}")
 

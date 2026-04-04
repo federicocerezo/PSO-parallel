@@ -9,6 +9,7 @@ from experiments.runner import RunConfig, run_experiment
 
 DIMS = [2, 10, 30]
 SEEDS = [42, 43, 44]
+EVALUATORS = ["sequential", "threading"]
 
 
 def main():
@@ -16,9 +17,10 @@ def main():
     parser.add_argument("--save-dir", default="results")
     parser.add_argument("--max-iters", type=int, default=500)
     parser.add_argument("--n-particles", type=int, default=30)
+    parser.add_argument("--evaluator", default="sequential", choices=EVALUATORS)
     args = parser.parse_args()
 
-    header = f"{'objective':12s} {'dim':>4} {'seed':>5} {'best_fitness':>14} {'time':>8}"
+    header = f"{'objective':12s} {'dim':>4} {'seed':>5} {'evaluator':>12} {'best_fitness':>14} {'time':>8}"
     print(header)
     print("-" * len(header))
 
@@ -34,11 +36,12 @@ def main():
                     n_particles=args.n_particles,
                     max_iters=args.max_iters,
                     seed=seed,
+                    evaluator=args.evaluator,
                     save_dir=args.save_dir,
                 )
                 result = run_experiment(config)
                 print(
-                    f"{objective:12s} {dim:>4d} {seed:>5d} "
+                    f"{objective:12s} {dim:>4d} {seed:>5d} {args.evaluator:>12s} "
                     f"{result.best_fitness:>14.4e} {result.time_total:>7.2f}s"
                 )
 
