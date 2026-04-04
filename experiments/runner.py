@@ -3,6 +3,7 @@ import numpy as np
 
 from core.pso import PSO, RunResult
 from core.evaluator import SequentialEvaluator
+from parallel.evaluator import ThreadPoolEvaluator
 from objectives import REGISTRY
 from storage.logger import setup_logger
 from storage.persistence import result_dir, save_summary_json, save_history_csv
@@ -55,7 +56,10 @@ def run_experiment(config: RunConfig) -> RunResult:
     log_name = f"{config.objective}_d{config.dim}_s{config.seed}"
     logger = setup_logger(log_name, log_dir=config.log_dir)
 
-    evaluator = SequentialEvaluator(objective)
+    if config.evaluator == "threading":
+        evaluator = ThreadPoolEvaluator(objective)
+    else:
+        evaluator = SequentialEvaluator(objective)
 
     pso_runner = PSO(
         evaluator=evaluator,
