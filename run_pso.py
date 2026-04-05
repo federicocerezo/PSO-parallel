@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from objectives import REGISTRY
 from experiments.runner import RunConfig, run_experiment
 
-EVALUATORS = ["sequential", "threading"]
+EVALUATORS = ["sequential", "threading", "multiprocessing"]
 
 
 def main():
@@ -48,7 +48,12 @@ def main():
 
     result = run_experiment(config)
 
-    label = "V0 (sequential)" if args.evaluator == "sequential" else "V1 (threading)"
+    labels = {
+        "sequential": "V0 (sequential)",
+        "threading": "V1 (threading)",
+        "multiprocessing": "V2 (multiprocessing)",
+    }
+    label = labels[args.evaluator]
     pct_eval = result.time_eval / result.time_total * 100 if result.time_total > 0 else 0
     pct_update = result.time_update / result.time_total * 100 if result.time_total > 0 else 0
 
