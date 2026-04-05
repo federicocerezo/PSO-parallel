@@ -59,6 +59,8 @@ def run_experiment(config: RunConfig) -> RunResult:
 
     if config.evaluator == "threading":
         evaluator = ThreadPoolEvaluator(objective)
+    elif config.evaluator == "multiprocessing":
+        evaluator = ProcessPoolEvaluator(objective)
     else:
         evaluator = SequentialEvaluator(objective)
 
