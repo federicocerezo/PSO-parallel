@@ -1,7 +1,7 @@
 import numpy as np
 
 from core.pso import PSO
-from core.evaluator import SequentialEvaluator
+from parallel.sequential import SequentialEvaluator
 from objectives.sphere import sphere
 
 

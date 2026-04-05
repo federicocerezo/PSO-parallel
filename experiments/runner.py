@@ -2,8 +2,8 @@ import os
 import numpy as np
 
 from core.pso import PSO, RunResult
-from core.evaluator import SequentialEvaluator
-from parallel.evaluator import ThreadPoolEvaluator
+from parallel.sequential import SequentialEvaluator
+from parallel.threading_eval import ThreadPoolEvaluator
 from objectives import REGISTRY
 from storage.logger import setup_logger
 from storage.persistence import result_dir, save_summary_json, save_history_csv

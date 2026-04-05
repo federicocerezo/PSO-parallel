@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import numpy as np
 
 from core.pso import PSO
-from core.evaluator import SequentialEvaluator
+from parallel.sequential import SequentialEvaluator
 from objectives import REGISTRY
 from viz.plots import plot_convergence
 
