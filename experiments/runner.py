@@ -96,7 +96,7 @@ def run_experiment(config: RunConfig) -> RunResult:
         )
 
     if config.save_dir:
-        rdir = result_dir(config.save_dir, config.objective, config.dim, config.seed)
+        rdir = result_dir(config.save_dir, config.objective, config.dim, config.seed, config.evaluator)
         cfg_dict = {
             "objective": config.objective,
             "dim": config.dim,

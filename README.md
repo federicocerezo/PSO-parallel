@@ -52,8 +52,16 @@ python3 run_grid_search.py --objective rastrigin --dim 30 --max-iters 500
 ### Visualization
 
 ```bash
-python3 make_viz.py --objective sphere
+python3 make_viz.py --objective sphere                        # convergence plot + GIF animation (d=2)
 python3 make_viz.py --objective ackley --dim 2 --max-iters 80
+python3 make_viz.py --objective rastrigin --dim 2 --fps 15
+```
+
+### Analysis (compare strategies, generate tables and plots)
+
+```bash
+python3 run_analysis.py
+python3 run_analysis.py --results-dir results --save-dir results/analysis
 ```
 
 ### Tests

@@ -27,8 +27,8 @@ def _hardware_info() -> Dict[str, str]:
     }
 
 
-def result_dir(base_dir: str, objective: str, dim: int, seed: int) -> str:
-    name = f"{objective}_d{dim}_s{seed}"
+def result_dir(base_dir: str, objective: str, dim: int, seed: int, evaluator: str = "sequential") -> str:
+    name = f"{objective}_d{dim}_s{seed}_{evaluator}"
     path = os.path.join(base_dir, name)
     os.makedirs(path, exist_ok=True)
     return path
