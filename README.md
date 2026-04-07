@@ -70,6 +70,10 @@ python3 run_analysis.py --results-dir results --save-dir results/analysis
 python3 -m pytest tests/ -v
 ```
 
+## Design document
+
+See [docs/design.md](docs/design.md) for architecture decisions, trade-offs, and limitations.
+
 ## Parallelism strategies
 
 | Version | File | Strategy | Status |
