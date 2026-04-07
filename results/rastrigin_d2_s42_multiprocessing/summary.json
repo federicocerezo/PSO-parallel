@@ -1,0 +1,34 @@
+{
+  "config": {
+    "objective": "rastrigin",
+    "dim": 2,
+    "bounds_lo": -5.12,
+    "bounds_hi": 5.12,
+    "n_particles": 30,
+    "w": 0.7,
+    "c1": 1.5,
+    "c2": 1.5,
+    "max_iters": 500,
+    "tol": 1e-08,
+    "patience": 50,
+    "seed": 42,
+    "evaluator": "multiprocessing"
+  },
+  "result": {
+    "best_fitness": 9.265477274311706e-12,
+    "best_position": [
+      2.1591797198177118e-07,
+      -9.565369438710688e-09
+    ],
+    "iterations": 143,
+    "time_total": 0.5466758100001243,
+    "time_eval": 0.4369236880038443,
+    "time_update": 0.07230486500156985
+  },
+  "git_hash": "38add2f",
+  "hardware": {
+    "platform": "Linux-6.17.0-20-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "cpu_count": "4"
+  }
+}

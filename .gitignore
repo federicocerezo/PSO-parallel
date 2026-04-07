@@ -8,8 +8,4 @@ build/
 .venv/
 logs/*
 !logs/.gitkeep
-results/*
-!results/.gitkeep
-*.gif
-*.mp4
 .pytest_cache/

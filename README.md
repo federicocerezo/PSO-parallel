@@ -27,41 +27,41 @@ logs/           Run logs (gitignored)
 ### Single run
 
 ```bash
-python3 run_pso.py --objective sphere --dim 10 --seed 42
-python3 run_pso.py --objective rastrigin --dim 30 --evaluator threading
-python3 run_pso.py --objective ackley --dim 10 --evaluator multiprocessing
-python3 run_pso.py --objective sphere --dim 10 --compare-baseline
-python3 run_pso.py --help
+python3 scripts/run_pso.py --objective sphere --dim 10 --seed 42
+python3 scripts/run_pso.py --objective rastrigin --dim 30 --evaluator threading
+python3 scripts/run_pso.py --objective ackley --dim 10 --evaluator multiprocessing
+python3 scripts/run_pso.py --objective sphere --dim 10 --compare-baseline
+python3 scripts/run_pso.py --help
 ```
 
 ### Benchmark suite (all objectives × dimensions × seeds)
 
 ```bash
-python3 run_benchmarks.py
-python3 run_benchmarks.py --evaluator threading
-python3 run_benchmarks.py --evaluator multiprocessing --max-iters 1000
+python3 scripts/run_benchmarks.py
+python3 scripts/run_benchmarks.py --evaluator threading
+python3 scripts/run_benchmarks.py --evaluator multiprocessing --max-iters 1000
 ```
 
 ### Hyperparameter grid search
 
 ```bash
-python3 run_grid_search.py --objective sphere --dim 10
-python3 run_grid_search.py --objective rastrigin --dim 30 --max-iters 500
+python3 scripts/run_grid_search.py --objective sphere --dim 10
+python3 scripts/run_grid_search.py --objective rastrigin --dim 30 --max-iters 500
 ```
 
 ### Visualization
 
 ```bash
-python3 make_viz.py --objective sphere                        # convergence plot + GIF animation (d=2)
-python3 make_viz.py --objective ackley --dim 2 --max-iters 80
-python3 make_viz.py --objective rastrigin --dim 2 --fps 15
+python3 scripts/make_viz.py --objective sphere                        # convergence plot + GIF animation (d=2)
+python3 scripts/make_viz.py --objective ackley --dim 2 --max-iters 80
+python3 scripts/make_viz.py --objective rastrigin --dim 2 --fps 15
 ```
 
 ### Analysis (compare strategies, generate tables and plots)
 
 ```bash
-python3 run_analysis.py
-python3 run_analysis.py --results-dir results --save-dir results/analysis
+python3 scripts/run_analysis.py
+python3 scripts/run_analysis.py --results-dir results --save-dir results/analysis
 ```
 
 ### Tests

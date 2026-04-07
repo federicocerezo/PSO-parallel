@@ -1,0 +1,42 @@
+{
+  "config": {
+    "objective": "rosenbrock",
+    "dim": 10,
+    "bounds_lo": -2.048,
+    "bounds_hi": 2.048,
+    "n_particles": 30,
+    "w": 0.7,
+    "c1": 1.5,
+    "c2": 1.5,
+    "max_iters": 500,
+    "tol": 1e-08,
+    "patience": 50,
+    "seed": 44,
+    "evaluator": "multiprocessing"
+  },
+  "result": {
+    "best_fitness": 1.25438393813618,
+    "best_position": [
+      0.9856335533322251,
+      0.9833274665731132,
+      0.9679209221851361,
+      0.9447395720015646,
+      0.8904352704190907,
+      0.8010387788503129,
+      0.6377979725156916,
+      0.4082010319895428,
+      0.1746104802007873,
+      0.0310458131906099
+    ],
+    "iterations": 500,
+    "time_total": 1.8987845960000413,
+    "time_eval": 1.5421944710078606,
+    "time_update": 0.25854099999378377
+  },
+  "git_hash": "38add2f",
+  "hardware": {
+    "platform": "Linux-6.17.0-20-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "cpu_count": "4"
+  }
+}
