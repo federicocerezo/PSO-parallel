@@ -2,7 +2,7 @@
 
 ## 1. Visión general
 
-El proyecto implementa Particle Swarm Optimization (PSO) canónico para minimizar funciones continuas en R^d, con soporte para múltiples estrategias de evaluación del fitness: secuencial (V0), hilos (V1) y procesos (V2). El objetivo principal es que el núcleo del algoritmo permanezca invariable y solo cambie la capa de evaluación.
+El proyecto implementa Particle Swarm Optimization (PSO) canónico para minimizar funciones continuas en R^d, con soporte para múltiples estrategias de evaluación del fitness: secuencial (V0), hilos (V1), procesos (V2) y concurrencia cooperativa con asyncio (V3). El objetivo principal es que el núcleo del algoritmo permanezca invariable y solo cambie la capa de evaluación.
 
 ---
 
@@ -10,8 +10,8 @@ El proyecto implementa Particle Swarm Optimization (PSO) canónico para minimiza
 
 ```
 core/           Motor PSO: partícula, enjambre, bucle principal, abstracciones
-objectives/     Funciones benchmark
-parallel/       Implementaciones de evaluación (V0, V1, V2)
+objectives/     Funciones benchmark (incluye noisy_sphere para el caso de uso de V3)
+parallel/       Implementaciones de evaluación (V0, V1, V2, V3)
 experiments/    Orquestación: runner y grid search
 storage/        Persistencia (JSON/CSV) y logging estructurado
 viz/            Visualización: convergencia y animación 2D
@@ -88,6 +88,22 @@ Cada worker corre en un proceso separado con su propio intérprete Python. No ha
 
 **Batching**: para reducir el número de round-trips de IPC, las posiciones se agrupan en lotes (`batch_size = max(1, n_particles // (n_workers * 2))`). Cada worker recibe un lote y lo evalúa secuencialmente. Con funciones baratas, el overhead de serialización sigue dominando y V2 es más lento que V0 (factor ~5–10x en los benchmarks). Con funciones caras (>10ms por partícula), V2 proporciona speedup real.
 
+### V3 — asyncio + run_in_executor (`parallel/asyncio_eval.py`)
+
+```python
+async def _eval_all(self, positions):
+    tasks = [self._eval_one(x, semaphore) for x in positions]
+    return list(await asyncio.gather(*tasks))
+```
+
+`asyncio.gather` lanza todas las corrutinas simultáneamente. Cada una delega la evaluación al thread pool del event loop mediante `loop.run_in_executor(None, self.objective, x)`. Mientras un hilo está bloqueado esperando I/O, el event loop programa los demás: el tiempo total es aproximadamente `max(latencias)` en lugar de `sum(latencias)`.
+
+**Caso de uso — `noisy_sphere`**: las funciones benchmark estándar son CPU-bound y no se benefician de asyncio (los hilos siguen compitiendo por el GIL, igual que en V1). Para que V3 tenga sentido se diseñó `objectives/noisy_service.py`, que envuelve la función Sphere con una pausa aleatoria de 5–50 ms por partícula, simulando una consulta a un servicio externo (REST, simulador, base de datos). Con 30 partículas, V0 tardaría ~750 ms por iteración; V3 tarda ~50 ms.
+
+**Parámetro `max_concurrent`**: si el servicio tiene un límite de peticiones concurrentes, se puede pasar un `asyncio.Semaphore` internamente mediante `max_concurrent=N`. Equivale al parámetro `max_workers` de V1/V2.
+
+**Limitación**: `asyncio.run()` crea y destruye un event loop por cada llamada a `evaluate()` (una por iteración del PSO). El overhead es despreciable frente a cualquier latencia realista de I/O, pero sería relevante si la función objetivo fuera sub-milisegundo.
+
 ---
 
 ## 5. Persistencia
@@ -106,6 +122,8 @@ Se eligieron JSON y CSV sobre YAML o bases de datos por ser legibles sin herrami
 | Limitación | Impacto |
 |---|---|
 | V1 y V2 más lentos que V0 para funciones baratas | Esperado por GIL e IPC; se documenta en los resultados |
+| V3 sin ventaja sobre V1 para funciones CPU-bound | asyncio no elimina el GIL; usar V3 solo con objetivos I/O-bound |
+| V3 crea un event loop por iteración (`asyncio.run`) | Overhead despreciable para latencias >1 ms, pero subóptimo para funciones muy rápidas |
 | Reproducibilidad de V1/V2 depende del orden de `executor.map` | `map` preserva orden, pero no garantizado para `submit` con orden manual |
 | Sin topología local (ring, von Neumann) | Solo global-best; fácil de añadir implementando `Topology` |
 | Animación solo para d=2 | Limitación de visualización 2D; para d=3 se requeriría proyección |

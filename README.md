@@ -12,8 +12,8 @@ pip install -r requirements.txt
 
 ```
 core/           PSO engine: particle, swarm, pso loop + abstractions (evaluator, bounds, topology)
-objectives/     Benchmark functions: sphere, ackley, rosenbrock, rastrigin
-parallel/       Evaluator implementations: sequential (V0), threading (V1), multiprocessing (V2)
+objectives/     Benchmark functions: sphere, ackley, rosenbrock, rastrigin, noisy_sphere
+parallel/       Evaluator implementations: sequential (V0), threading (V1), multiprocessing (V2), asyncio (V3)
 experiments/    Orchestration: runner, grid search
 storage/        Persistence (JSON/CSV) and structured logging
 viz/            Convergence plots
@@ -30,6 +30,7 @@ logs/           Run logs (gitignored)
 python3 scripts/run_pso.py --objective sphere --dim 10 --seed 42
 python3 scripts/run_pso.py --objective rastrigin --dim 30 --evaluator threading
 python3 scripts/run_pso.py --objective ackley --dim 10 --evaluator multiprocessing
+python3 scripts/run_pso.py --objective noisy_sphere --dim 10 --evaluator asyncio
 python3 scripts/run_pso.py --objective sphere --dim 10 --compare-baseline
 python3 scripts/run_pso.py --help
 ```
@@ -40,6 +41,7 @@ python3 scripts/run_pso.py --help
 python3 scripts/run_benchmarks.py
 python3 scripts/run_benchmarks.py --evaluator threading
 python3 scripts/run_benchmarks.py --evaluator multiprocessing --max-iters 1000
+python3 scripts/run_benchmarks.py --evaluator asyncio
 ```
 
 ### Hyperparameter grid search
@@ -81,7 +83,7 @@ See [docs/design.md](docs/design.md) for architecture decisions, trade-offs, and
 | V0 | `parallel/sequential.py` | Sequential loop | Done |
 | V1 | `parallel/threading_eval.py` | ThreadPoolExecutor | Done |
 | V2 | `parallel/multiprocessing_eval.py` | ProcessPoolExecutor + batching | Done |
-| V3 | — | asyncio (simulated latency) | Pending |
+| V3 | `parallel/asyncio_eval.py` | asyncio.gather + run_in_executor | Done |
 | V4 | — | NumPy vectorized | Pending |
 
 All versions share the same PSO core and produce identical results for the same seed.
@@ -107,6 +109,24 @@ V2 provides genuine speedup.
 
 Batching is used to reduce the number of IPC round-trips: particles are grouped
 into chunks and each chunk is sent to a worker as a single task.
+
+### V3 — asyncio (cooperative concurrency)
+
+Uses `asyncio.gather` to launch all particle evaluations concurrently. Each
+coroutine wraps the sync objective with `loop.run_in_executor`, which dispatches
+it to the default thread pool. While one thread is blocked on I/O, the event
+loop schedules the others — total wall time ≈ max(latencies) instead of sum(latencies).
+
+**When it makes sense**: only for I/O-bound objectives. The benchmark function
+`noisy_sphere` (`objectives/noisy_service.py`) simulates this by adding a random
+delay of 5–50 ms per evaluation (modelling a query to a local service or simulator).
+On CPU-bound functions like Sphere or Rastrigin, V3 provides no advantage over V1
+since threads still compete for the GIL.
+
+```bash
+# Recommended use: pair asyncio with the noisy_sphere objective
+python3 scripts/run_pso.py --objective noisy_sphere --dim 10 --evaluator asyncio
+```
 
 ## Bounds strategy
 

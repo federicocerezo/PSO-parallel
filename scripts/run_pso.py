@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from objectives import REGISTRY
 from experiments.runner import RunConfig, run_experiment
 
-EVALUATORS = ["sequential", "threading", "multiprocessing"]
+EVALUATORS = ["sequential", "threading", "multiprocessing", "asyncio"]
 
 
 def main():
@@ -52,6 +52,7 @@ def main():
         "sequential": "V0 (sequential)",
         "threading": "V1 (threading)",
         "multiprocessing": "V2 (multiprocessing)",
+        "asyncio": "V3 (asyncio)",
     }
     label = labels[args.evaluator]
     pct_eval = result.time_eval / result.time_total * 100 if result.time_total > 0 else 0

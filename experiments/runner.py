@@ -5,6 +5,7 @@ from core.pso import PSO, RunResult
 from parallel.sequential import SequentialEvaluator
 from parallel.threading_eval import ThreadPoolEvaluator
 from parallel.multiprocessing_eval import ProcessPoolEvaluator
+from parallel.asyncio_eval import AsyncioEvaluator
 from objectives import REGISTRY
 from storage.logger import setup_logger
 from storage.persistence import result_dir, save_summary_json, save_history_csv
@@ -61,6 +62,8 @@ def run_experiment(config: RunConfig) -> RunResult:
         evaluator = ThreadPoolEvaluator(objective)
     elif config.evaluator == "multiprocessing":
         evaluator = ProcessPoolEvaluator(objective)
+    elif config.evaluator == "asyncio":
+        evaluator = AsyncioEvaluator(objective)
     else:
         evaluator = SequentialEvaluator(objective)
 

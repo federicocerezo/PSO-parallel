@@ -9,7 +9,7 @@ from experiments.runner import RunConfig, run_experiment
 
 DIMS = [2, 10, 30]
 SEEDS = [42, 43, 44]
-EVALUATORS = ["sequential", "threading", "multiprocessing"]
+EVALUATORS = ["sequential", "threading", "multiprocessing", "asyncio"]
 
 
 def main():
