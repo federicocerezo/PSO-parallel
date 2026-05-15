@@ -104,6 +104,22 @@ async def _eval_all(self, positions):
 
 **Limitación**: `asyncio.run()` crea y destruye un event loop por cada llamada a `evaluate()` (una por iteración del PSO). El overhead es despreciable frente a cualquier latencia realista de I/O, pero sería relevante si la función objetivo fuera sub-milisegundo.
 
+### V4 — NumPy vectorizado (`parallel/numpy_eval.py`)
+
+```python
+def evaluate(self, positions: List[NDArray]) -> List[float]:
+    X = np.stack(positions)          # (n_particles, dim)
+    return self.batch_objective(X).tolist()
+```
+
+Apila todas las posiciones en una matriz `(n, d)` y delega la evaluación completa a una función batch que opera con broadcasting de NumPy. No hay bucle Python sobre partículas: la iteración ocurre en C a nivel de BLAS/NumPy.
+
+**Interfaz batch**: las funciones estándar (sphere, ackley, rosenbrock, rastrigin) tienen versiones vectorizadas en `objectives/vectorized.py` con firma `(NDArray[n, d]) -> NDArray[n]`. Estas se exponen a través de `BATCH_REGISTRY` en `objectives/__init__.py`. Cuando el runner detecta `evaluator == "numpy"`, selecciona la función batch correspondiente; si el objetivo no tiene versión batch (p. ej. `noisy_sphere`), se lanza un error explícito.
+
+**Paralelismo implícito**: la mejora no viene de hilos ni procesos sino de que NumPy delega las operaciones matriciales a rutinas BLAS que pueden usar SIMD y múltiples núcleos internamente (dependiendo de la instalación: OpenBLAS, MKL, etc.). El speedup frente a V0 crece con `n_particles` y `dim`, siendo más pronunciado para dimensiones altas.
+
+**Limitación — solo evaluación**: la actualización de velocidades y posiciones sigue siendo un bucle Python sobre `swarm.particles`. Vectorizar también la fase de actualización requeriría reformular el estado del enjambre como matrices `(n, d)` y reescribir `PSO.run()`, rompiendo el principio de núcleo común. Para los benchmarks usados, la fase de evaluación es el cuello de botella, por lo que V4 ya muestra speedup significativo.
+
 ---
 
 ## 5. Persistencia
@@ -124,6 +140,8 @@ Se eligieron JSON y CSV sobre YAML o bases de datos por ser legibles sin herrami
 | V1 y V2 más lentos que V0 para funciones baratas | Esperado por GIL e IPC; se documenta en los resultados |
 | V3 sin ventaja sobre V1 para funciones CPU-bound | asyncio no elimina el GIL; usar V3 solo con objetivos I/O-bound |
 | V3 crea un event loop por iteración (`asyncio.run`) | Overhead despreciable para latencias >1 ms, pero subóptimo para funciones muy rápidas |
+| V4 solo vectoriza la evaluación, no la actualización | Vectorizar el update requiere reformular el enjambre como matrices; fuera del alcance del núcleo común |
+| V4 no soporta `noisy_sphere` ni funciones sin versión batch | El `BATCH_REGISTRY` cubre solo los 4 benchmarks estándar |
 | Reproducibilidad de V1/V2 depende del orden de `executor.map` | `map` preserva orden, pero no garantizado para `submit` con orden manual |
 | Sin topología local (ring, von Neumann) | Solo global-best; fácil de añadir implementando `Topology` |
 | Animación solo para d=2 | Limitación de visualización 2D; para d=3 se requeriría proyección |

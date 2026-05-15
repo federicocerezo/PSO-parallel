@@ -6,7 +6,8 @@ from parallel.sequential import SequentialEvaluator
 from parallel.threading_eval import ThreadPoolEvaluator
 from parallel.multiprocessing_eval import ProcessPoolEvaluator
 from parallel.asyncio_eval import AsyncioEvaluator
-from objectives import REGISTRY
+from parallel.numpy_eval import NumpyEvaluator
+from objectives import REGISTRY, BATCH_REGISTRY
 from storage.logger import setup_logger
 from storage.persistence import result_dir, save_summary_json, save_history_csv
 
@@ -64,6 +65,11 @@ def run_experiment(config: RunConfig) -> RunResult:
         evaluator = ProcessPoolEvaluator(objective)
     elif config.evaluator == "asyncio":
         evaluator = AsyncioEvaluator(objective)
+    elif config.evaluator == "numpy":
+        batch_fn = BATCH_REGISTRY.get(config.objective)
+        if batch_fn is None:
+            raise ValueError(f"No vectorized implementation for '{config.objective}'")
+        evaluator = NumpyEvaluator(batch_fn)
     else:
         evaluator = SequentialEvaluator(objective)
 

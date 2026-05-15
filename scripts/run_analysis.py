@@ -1,7 +1,9 @@
 import argparse
+import csv
 import json
 import os
 import sys
+from collections import defaultdict
 from typing import Any, Dict, List
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -137,6 +139,63 @@ def plot_time_bars(records: List[Dict[str, Any]], save_dir: str) -> None:
     print(f"Time bar chart saved to {path}")
 
 
+def load_histories(results_dir: str) -> Dict:
+    groups = defaultdict(list)
+    for entry in sorted(os.listdir(results_dir)):
+        summary_path = os.path.join(results_dir, entry, "summary.json")
+        history_path = os.path.join(results_dir, entry, "history.csv")
+        if not os.path.isfile(summary_path) or not os.path.isfile(history_path):
+            continue
+        with open(summary_path) as f:
+            cfg = json.load(f)["config"]
+        key = (cfg["objective"], cfg["dim"], cfg["evaluator"])
+        history = []
+        with open(history_path, newline="") as f:
+            for row in csv.DictReader(f):
+                history.append(float(row["best_fitness"]))
+        groups[key].append(history)
+    return dict(groups)
+
+
+def plot_convergence_curves(groups: Dict, save_dir: str) -> None:
+    objectives = sorted({k[0] for k in groups})
+    dims = sorted({k[1] for k in groups})
+    evaluators = sorted({k[2] for k in groups})
+    colors = plt.cm.tab10.colors
+
+    for obj in objectives:
+        for dim in dims:
+            if not any((obj, dim, ev) in groups for ev in evaluators):
+                continue
+            fig, ax = plt.subplots(figsize=(8, 5))
+            for i, ev in enumerate(evaluators):
+                key = (obj, dim, ev)
+                if key not in groups:
+                    continue
+                histories = groups[key]
+                max_len = max(len(h) for h in histories)
+                padded = np.array([h + [h[-1]] * (max_len - len(h)) for h in histories])
+                mean = padded.mean(axis=0)
+                std = padded.std(axis=0)
+                iters = np.arange(max_len)
+                color = colors[i % len(colors)]
+                ax.semilogy(iters, mean, label=ev, color=color)
+                ax.fill_between(iters,
+                                np.clip(mean - std, 1e-12, None),
+                                mean + std,
+                                alpha=0.2, color=color)
+            ax.set_xlabel("Iteration")
+            ax.set_ylabel("Best fitness (log scale)")
+            ax.set_title(f"{obj} d={dim} — convergence (mean ± std over seeds)")
+            ax.legend()
+            ax.grid(True, which="both", ls="--", alpha=0.4)
+            plt.tight_layout()
+            path = os.path.join(save_dir, f"convergence_{obj}_d{dim}.png")
+            fig.savefig(path, dpi=100)
+            plt.close(fig)
+            print(f"Convergence curve saved to {path}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Analyze PSO experiment results")
     parser.add_argument("--results-dir", default="results")
@@ -161,6 +220,10 @@ def main():
 
     plot_fitness_boxplots(records, args.save_dir)
     plot_time_bars(records, args.save_dir)
+
+    groups = load_histories(args.results_dir)
+    if groups:
+        plot_convergence_curves(groups, args.save_dir)
 
 
 if __name__ == "__main__":

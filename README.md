@@ -31,6 +31,7 @@ python3 scripts/run_pso.py --objective sphere --dim 10 --seed 42
 python3 scripts/run_pso.py --objective rastrigin --dim 30 --evaluator threading
 python3 scripts/run_pso.py --objective ackley --dim 10 --evaluator multiprocessing
 python3 scripts/run_pso.py --objective noisy_sphere --dim 10 --evaluator asyncio
+python3 scripts/run_pso.py --objective sphere --dim 10 --evaluator numpy
 python3 scripts/run_pso.py --objective sphere --dim 10 --compare-baseline
 python3 scripts/run_pso.py --help
 ```
@@ -84,7 +85,7 @@ See [docs/design.md](docs/design.md) for architecture decisions, trade-offs, and
 | V1 | `parallel/threading_eval.py` | ThreadPoolExecutor | Done |
 | V2 | `parallel/multiprocessing_eval.py` | ProcessPoolExecutor + batching | Done |
 | V3 | `parallel/asyncio_eval.py` | asyncio.gather + run_in_executor | Done |
-| V4 | — | NumPy vectorized | Pending |
+| V4 | `parallel/numpy_eval.py` | NumPy batch operations (vectorized) | Done |
 
 All versions share the same PSO core and produce identical results for the same seed.
 Only the fitness evaluation strategy changes.
@@ -126,6 +127,22 @@ since threads still compete for the GIL.
 ```bash
 # Recommended use: pair asyncio with the noisy_sphere objective
 python3 scripts/run_pso.py --objective noisy_sphere --dim 10 --evaluator asyncio
+```
+
+### V4 — NumPy vectorized (implicit parallelism)
+
+Stacks all particle positions into a single `(n_particles, dim)` matrix and
+evaluates them in one NumPy call using broadcasting. Avoids the Python loop
+over particles entirely. The speedup comes from NumPy's internal C/BLAS
+routines, not from threads or processes.
+
+Vectorized implementations for all four standard benchmarks are in
+`objectives/vectorized.py`. `noisy_sphere` has no batch version (its
+`time.sleep` cannot be vectorized).
+
+```bash
+python3 scripts/run_pso.py --objective sphere --dim 30 --evaluator numpy
+python3 scripts/run_benchmarks.py --evaluator numpy
 ```
 
 ## Bounds strategy

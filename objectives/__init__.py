@@ -3,6 +3,7 @@ from .ackley import ackley
 from .rosenbrock import rosenbrock
 from .rastrigin import rastrigin
 from .noisy_service import noisy_sphere
+from .vectorized import sphere_batch, ackley_batch, rosenbrock_batch, rastrigin_batch
 
 REGISTRY = {
     "sphere": {
@@ -30,4 +31,11 @@ REGISTRY = {
         "bounds": (-5.12, 5.12),
         "optimum": 0.0,
     },
+}
+
+BATCH_REGISTRY = {
+    "sphere": sphere_batch,
+    "ackley": ackley_batch,
+    "rosenbrock": rosenbrock_batch,
+    "rastrigin": rastrigin_batch,
 }
