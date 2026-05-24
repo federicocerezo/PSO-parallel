@@ -21,13 +21,13 @@
       3.207727841704763e-07
     ],
     "iterations": 95,
-    "time_total": 0.09645205799915857,
-    "time_eval": 0.015294501006792416,
-    "time_update": 0.061032708003949665
+    "time_total": 0.09264225000151782,
+    "time_eval": 0.011566285003937082,
+    "time_update": 0.05876165098743513
   },
-  "git_hash": "38add2f",
+  "git_hash": "9ea04f8",
   "hardware": {
-    "platform": "Linux-6.17.0-20-generic-x86_64-with-glibc2.39",
+    "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
     "python": "3.12.3",
     "cpu_count": "4"
   }

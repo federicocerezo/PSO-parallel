@@ -10,6 +10,7 @@ from experiments.runner import RunConfig, run_experiment
 DIMS = [2, 10, 30]
 SEEDS = [42, 43, 44]
 EVALUATORS = ["sequential", "threading", "multiprocessing", "asyncio", "numpy"]
+BENCHMARK_OBJECTIVES = ["sphere", "ackley", "rosenbrock", "rastrigin"]
 
 
 def main():
@@ -24,26 +25,29 @@ def main():
     print(header)
     print("-" * len(header))
 
-    for objective in REGISTRY:
+    for objective in BENCHMARK_OBJECTIVES:
         for dim in DIMS:
             for seed in SEEDS:
                 obj_info = REGISTRY[objective]
-                config = RunConfig(
-                    objective=objective,
-                    dim=dim,
-                    bounds_lo=obj_info["bounds"][0],
-                    bounds_hi=obj_info["bounds"][1],
-                    n_particles=args.n_particles,
-                    max_iters=args.max_iters,
-                    seed=seed,
-                    evaluator=args.evaluator,
-                    save_dir=args.save_dir,
-                )
-                result = run_experiment(config)
-                print(
-                    f"{objective:12s} {dim:>4d} {seed:>5d} {args.evaluator:>12s} "
-                    f"{result.best_fitness:>14.4e} {result.time_total:>7.2f}s"
-                )
+                try:
+                    config = RunConfig(
+                        objective=objective,
+                        dim=dim,
+                        bounds_lo=obj_info["bounds"][0],
+                        bounds_hi=obj_info["bounds"][1],
+                        n_particles=args.n_particles,
+                        max_iters=args.max_iters,
+                        seed=seed,
+                        evaluator=args.evaluator,
+                        save_dir=args.save_dir,
+                    )
+                    result = run_experiment(config)
+                    print(
+                        f"{objective:12s} {dim:>4d} {seed:>5d} {args.evaluator:>12s} "
+                        f"{result.best_fitness:>14.4e} {result.time_total:>7.2f}s"
+                    )
+                except ValueError as e:
+                    print(f"{objective:12s} {dim:>4d} {seed:>5d} {args.evaluator:>12s}  SKIP: {e}")
 
     print(f"\nResults saved to {args.save_dir}/")
 

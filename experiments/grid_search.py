@@ -50,7 +50,7 @@ def grid_search(
             result = run_experiment(rc)
             fitness_list.append(result.best_fitness)
             time_list.append(result.time_total)
-            auc_list.append(float(np.trapz(result.history) / len(result.history)))
+            auc_list.append(float(np.trapezoid(result.history) / len(result.history)))
             conv_iter_list.append(result.iterations)
             done += 1
             print(f"  [{done}/{total}] w={w} c1={c1} c2={c2} n={n_particles} s={seed} -> {result.best_fitness:.4e}")

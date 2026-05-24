@@ -1,0 +1,34 @@
+{
+  "config": {
+    "objective": "rosenbrock",
+    "dim": 2,
+    "bounds_lo": -2.048,
+    "bounds_hi": 2.048,
+    "n_particles": 30,
+    "w": 0.7,
+    "c1": 1.5,
+    "c2": 1.5,
+    "max_iters": 500,
+    "tol": 1e-08,
+    "patience": 50,
+    "seed": 44,
+    "evaluator": "asyncio"
+  },
+  "result": {
+    "best_fitness": 1.1333289324411509e-11,
+    "best_position": [
+      0.9999966512551097,
+      0.9999932679965173
+    ],
+    "iterations": 184,
+    "time_total": 1.9472980799982906,
+    "time_eval": 1.8280939279902668,
+    "time_update": 0.07991621199835208
+  },
+  "git_hash": "9ea04f8",
+  "hardware": {
+    "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "cpu_count": "4"
+  }
+}
