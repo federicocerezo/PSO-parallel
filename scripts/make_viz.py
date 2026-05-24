@@ -9,7 +9,7 @@ import numpy as np
 from core.pso import PSO
 from parallel.sequential import SequentialEvaluator
 from objectives import REGISTRY
-from viz.plots import plot_convergence, animate_swarm_2d
+from viz.plots import plot_convergence, animate_swarm_2d, animate_swarm_3d
 
 
 def main():
@@ -65,6 +65,16 @@ def main():
             fps=args.fps,
         )
         print(f"Animation saved to {gif_path}")
+    elif args.dim == 3:
+        gif_path = os.path.join(args.save_dir, f"{args.objective}_d{args.dim}_animation.gif")
+        animate_swarm_3d(
+            frames=frames,
+            history=result.history,
+            title=title,
+            save_path=gif_path,
+            fps=args.fps,
+        )
+        print(f"3D animation saved to {gif_path}")
 
     print(f"Best fitness: {result.best_fitness:.6e} in {result.iterations} iterations")
 

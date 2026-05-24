@@ -100,3 +100,76 @@ def animate_swarm_2d(
         plt.close(fig)
     else:
         plt.show()
+
+
+def animate_swarm_3d(
+    frames: List[Tuple[NDArray, NDArray, float]],
+    history: List[float],
+    title: str = "PSO",
+    save_path: Optional[str] = None,
+    fps: int = 10,
+) -> None:
+    from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+    all_pos = np.vstack([f[0] for f in frames])
+    lo = all_pos.min(axis=0)
+    hi = all_pos.max(axis=0)
+    pad = (hi - lo) * 0.05 + 1e-6
+
+    fig = plt.figure(figsize=(12, 5))
+    fig.suptitle(title)
+
+    ax3d = fig.add_subplot(121, projection="3d")
+    ax3d.set_xlabel("x₀")
+    ax3d.set_ylabel("x₁")
+    ax3d.set_zlabel("x₂")
+    ax3d.set_xlim(lo[0] - pad[0], hi[0] + pad[0])
+    ax3d.set_ylim(lo[1] - pad[1], hi[1] + pad[1])
+    ax3d.set_zlim(lo[2] - pad[2], hi[2] + pad[2])
+
+    scat = ax3d.scatter([], [], [], c="red", s=20, depthshade=True, label="particles")
+    gbest_dot = ax3d.scatter([], [], [], c="gold", s=200, marker="*", depthshade=False, label="global best")
+    iter_text = ax3d.text2D(0.02, 0.97, "", transform=ax3d.transAxes, fontsize=9, va="top")
+    ax3d.legend(loc="lower left", fontsize=8)
+
+    ax_conv = fig.add_subplot(122)
+    ax_conv.set_xlabel("Iteration")
+    ax_conv.set_ylabel("Best fitness (log scale)")
+    ax_conv.set_yscale("log")
+    ax_conv.set_xlim(0, len(history))
+    pos_vals = [v for v in history if v > 0]
+    if pos_vals:
+        ax_conv.set_ylim(min(pos_vals) * 0.5, max(history) * 2)
+    ax_conv.grid(True, which="both", ls="--", alpha=0.4)
+    conv_line, = ax_conv.plot([], [], "b-", linewidth=1.5)
+    conv_dot, = ax_conv.plot([], [], "ro", markersize=5)
+
+    def init():
+        scat._offsets3d = (np.array([]), np.array([]), np.array([]))
+        gbest_dot._offsets3d = (np.array([]), np.array([]), np.array([]))
+        conv_line.set_data([], [])
+        conv_dot.set_data([], [])
+        iter_text.set_text("")
+        return scat, gbest_dot, conv_line, conv_dot, iter_text
+
+    def update(frame_idx):
+        positions, gbest, fitness = frames[frame_idx]
+        scat._offsets3d = (positions[:, 0], positions[:, 1], positions[:, 2])
+        gbest_dot._offsets3d = (np.array([gbest[0]]), np.array([gbest[1]]), np.array([gbest[2]]))
+        iters = list(range(frame_idx + 1))
+        conv_line.set_data(iters, history[:frame_idx + 1])
+        conv_dot.set_data([frame_idx], [history[frame_idx]])
+        iter_text.set_text(f"iter={frame_idx}  best={fitness:.3e}")
+        return scat, gbest_dot, conv_line, conv_dot, iter_text
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=len(frames), init_func=init,
+        interval=1000 // fps, blit=False
+    )
+
+    plt.tight_layout()
+    if save_path:
+        ani.save(save_path, writer="pillow", fps=fps)
+        plt.close(fig)
+    else:
+        plt.show()

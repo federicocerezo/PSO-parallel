@@ -30,6 +30,8 @@ def grid_search(
     for w, c1, c2, n_particles in combos:
         fitness_list = []
         time_list = []
+        auc_list = []
+        conv_iter_list = []
 
         for seed in seeds:
             rc = RunConfig(
@@ -48,6 +50,8 @@ def grid_search(
             result = run_experiment(rc)
             fitness_list.append(result.best_fitness)
             time_list.append(result.time_total)
+            auc_list.append(float(np.trapz(result.history) / len(result.history)))
+            conv_iter_list.append(result.iterations)
             done += 1
             print(f"  [{done}/{total}] w={w} c1={c1} c2={c2} n={n_particles} s={seed} -> {result.best_fitness:.4e}")
 
@@ -59,6 +63,8 @@ def grid_search(
             "mean_fitness": float(np.mean(fitness_list)),
             "std_fitness": float(np.std(fitness_list)),
             "mean_time": float(np.mean(time_list)),
+            "mean_auc": float(np.mean(auc_list)),
+            "mean_conv_iter": float(np.mean(conv_iter_list)),
         })
 
     results.sort(key=lambda r: r["mean_fitness"])

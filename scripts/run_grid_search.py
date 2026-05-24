@@ -45,11 +45,12 @@ def main():
         json.dump(results, f, indent=2)
 
     print(f"\nTop 5 configurations for {args.objective} d={args.dim}:")
-    print(f"{'w':>6} {'c1':>6} {'c2':>6} {'n':>6} {'mean_fitness':>14} {'std':>12}")
+    print(f"{'w':>6} {'c1':>6} {'c2':>6} {'n':>6} {'mean_fitness':>14} {'std':>12} {'mean_auc':>12} {'conv_iter':>10}")
     for r in results[:5]:
         print(
             f"{r['w']:>6.2f} {r['c1']:>6.2f} {r['c2']:>6.2f} {r['n_particles']:>6d} "
-            f"{r['mean_fitness']:>14.4e} {r['std_fitness']:>12.4e}"
+            f"{r['mean_fitness']:>14.4e} {r['std_fitness']:>12.4e} "
+            f"{r['mean_auc']:>12.4e} {r['mean_conv_iter']:>10.1f}"
         )
 
     print(f"\nFull results saved to {out_path}")
