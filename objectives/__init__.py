@@ -4,6 +4,7 @@ from .rosenbrock import rosenbrock
 from .rastrigin import rastrigin
 from .noisy_service import noisy_sphere
 from .vectorized import sphere_batch, ackley_batch, rosenbrock_batch, rastrigin_batch
+from .wind_farm import wind_farm_d10
 
 REGISTRY = {
     "sphere": {
@@ -29,6 +30,11 @@ REGISTRY = {
     "noisy_sphere": {
         "fn": noisy_sphere,
         "bounds": (-5.12, 5.12),
+        "optimum": 0.0,
+    },
+    "wind_farm": {
+        "fn": wind_farm_d10,
+        "bounds": (0.0, 2000.0),
         "optimum": 0.0,
     },
 }

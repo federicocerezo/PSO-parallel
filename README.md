@@ -67,6 +67,26 @@ python3 scripts/run_analysis.py
 python3 scripts/run_analysis.py --results-dir results --save-dir results/analysis
 ```
 
+### Case study — Wind farm layout optimisation
+
+Optimises the positions of N wind turbines on a 2000 × 2000 m terrain to
+minimise annual-energy-production wake losses using the Jensen (Park) model
+with Katić superposition.  Decision variable dimension d = 2N.
+
+```bash
+python3 scripts/run_wind_farm.py                                   # 5 turbines, d=10
+python3 scripts/run_wind_farm.py --n-turbines 15 --max-iters 500   # 15 turbines, d=30
+python3 scripts/run_wind_farm.py --n-turbines 1                    # single turbine, d=2
+python3 scripts/run_wind_farm.py --evaluator multiprocessing        # parallel evaluation
+```
+
+Generates a PNG layout plot with Jensen wake cones in `results/wind_farm/`.
+Also works with the generic runner:
+
+```bash
+python3 scripts/run_pso.py --objective wind_farm --dim 10
+```
+
 ### Tests
 
 ```bash
